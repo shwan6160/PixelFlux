@@ -53,9 +53,9 @@ async function loadReforgingTableEBM() {
     ebmBlock.children.forEach(child => child.position.z -= size.z * 0.5);
 
     // 2. [사용자 정의 좌표]
-    const P = new THREE.Vector3(0.24, 0.43, 0.24);    // 망치가 놓일 위치
-    const T1 = new THREE.Vector3(0.12, 0.25, 0.12); // 머리가 가리킬 좌표
-    const T2 = new THREE.Vector3(0.5, 0.27, 0.5);     // 손잡이가 가리킬 좌표
+    const P = new THREE.Vector3(0.25, 0.5, 0.25);    // 망치가 놓일 위치
+    const T1 = new THREE.Vector3(0, 0.25, 0); // 머리가 가리킬 좌표
+    const T2 = new THREE.Vector3(0.5, 0.25, 0.5);     // 손잡이가 가리킬 좌표
 
     // 3. [로컬 벡터 지정] 회전 전 모델에서 "어디가 머리고 어디가 손잡이인가"
     // 보통 마인크래프트 아이템은 Z가 정면(머리), X가 오른쪽(손잡이)입니다.
