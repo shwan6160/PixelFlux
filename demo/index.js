@@ -1,5 +1,5 @@
-import { initScene, createMinecraftBlockMesh } from '../pixelflux.js';
-import { addEBM } from '../addon/apotheosis.js';
+import { initScene, createMinecraftBlockMesh } from 'https://esm.sh/gh/shwan6160/PixelFlux@v0.1.1/dist/pixelflux.js';
+import { addEBM } from 'https://esm.sh/gh/shwan6160/PixelFlux@v0.1.1/dist/addon/apotheosis.js';
 
 window.addEventListener('DOMContentLoaded', async () => {
 
