@@ -1,60 +1,28 @@
 body {
     margin: 0;
     overflow: hidden;
-    background-color: #2c2f33;
+    background-color: #eee;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: white;
 }
-#canvas-container {
-    width: 100vw;
-    height: 100vh;
-    display: block;
-}
-#ui-panel {
+
+div.views {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(0, 0, 0, 0.7);
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    width: 350px;
-    z-index: 10;
-}
-.input-group {
-    margin-bottom: 15px;
-}
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-.input-group input {
-    width: 100%;
-    padding: 8px;
     box-sizing: border-box;
-    background: #40444b;
-    border: 1px solid #7289da;
-    color: white;
-    border-radius: 4px;
+    z-index: 1;
 }
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #7289da;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-button:hover {
-    background-color: #5b6eae;
-}
-#loading-msg {
-    display: none;
-    margin-top: 10px;
-    font-size: 14px;
-    color: #43b581;
+
+div.views div {
+    width: 300px;
+    height: 200px;
+    display: block;
+
+    border: 2px solid #444;
+    margin: 10px;
 }

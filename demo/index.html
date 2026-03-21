@@ -2,33 +2,15 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PixelFlux</title>
-    <link rel="stylesheet" href="./index.css"></link>
-
-    <!-- Three.js 라이브러리 로드 (ES Module 방식) -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-
-    <div id="ui-panel">
-        <div class="input-group">
-            <label for="json-url">Block JSON URL</label>
-            <input type="text" id="json-url" value="https://raw.githubusercontent.com/Shadows-of-Fire/Apotheosis/refs/heads/1.21/src/main/resources/assets/apotheosis/models/block/reforging_table.json" placeholder="JSON URL 입력">
-        </div>
-        <button id="render-btn">렌더링 하기</button>
-        <div id="loading-msg">성공적으로 불러왔습니다!</div>
+    <div class="views">
+        <div id="view1"></div>
+        <div id="view2"></div>
+        <div id="view3"></div>
     </div>
-
-    <div id="canvas-container"></div>
-
     <script type="module" src="./index.js"></script>
 </body>
 </html>
