@@ -4,24 +4,81 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const MC_VERSION = "26.1-pre-3";
 const VANILLA_ASSET_URL = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/${MC_VERSION}/assets/minecraft`;
 
-// 1. Three.js 초기 씬 설정 및 반환
-export function initScene(containerId) {
-    const container = document.getElementById(containerId);
-    
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB); 
+const ViewManager = {
+    views: [],
+    renderer: null,
+    canvas: null,
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    init() {
+        if (this.renderer) return;
+        this.canvas = document.createElement('canvas');
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.width = '100vw';
+        this.canvas.style.height = '100vh';
+        this.canvas.style.pointerEvents = 'none'; // 클릭 이벤트가 아래 div로 전달되게 함
+        this.canvas.style.zIndex = '-1'; 
+        document.body.appendChild(this.canvas);
+
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setScissorTest(true); // Scissor Test 활성화
+
+        this.animate();
+    },
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        this.render();
+    },
+
+    render() {
+        // 캔버스 크기 조정
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        if (this.canvas.width !== width || this.canvas.height !== height) {
+            this.renderer.setSize(width, height, false);
+        }
+
+        this.renderer.clear();
+
+        this.views.forEach(view => {
+            const rect = view.container.getBoundingClientRect();
+            
+            // 화면 밖에 있으면 렌더링 스킵 (성능 최적화)
+            if (rect.bottom < 0 || rect.top > height || rect.right < 0 || rect.left > width) return;
+
+            // 좌표 계산 (Three.js는 왼쪽 아래가 0,0 / DOM은 왼쪽 위가 0,0)
+            const bottom = height - rect.bottom;
+            const left = rect.left;
+
+            // 1. 해당 구역만 가두기
+            this.renderer.setViewport(left, bottom, rect.width, rect.height);
+            this.renderer.setScissor(left, bottom, rect.width, rect.height);
+
+            // 2. 렌더링
+            view.controls.update();
+            this.renderer.render(view.scene, view.camera);
+        });
+    }
+};
+
+// 1. 수정된 initScene (이제 View를 생성하고 등록함)
+export function initScene(containerId) {
+    ViewManager.init(); // 관리자 초기화 (최초 1회만 실행됨)
+
+    const container = document.getElementById(containerId);
+    const scene = new THREE.Scene();
+    
+    // 개별 뷰마다 다른 배경색이 필요하다면 여기서 설정하거나 투명하게 유지
+    // scene.background = new THREE.Color(0x87CEEB); 
+
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(-2, 1.5, 2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, container); // renderer.domElement 대신 container 사용
     controls.enableDamping = true;
-    controls.target.set(0, 0, 0);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
@@ -29,22 +86,10 @@ export function initScene(containerId) {
     directionalLight.position.set(5, 10, 5);
     scene.add(directionalLight);
 
-    // 리사이즈 이벤트 처리
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    const view = { container, scene, camera, controls };
+    ViewManager.views.push(view);
 
-    // 렌더링 루프 (클로저 활용)
-    const animate = () => {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-    };
-    animate();
-
-    return { scene, camera, renderer, controls };
+    return view;
 }
 
 // 2. 텍스처 로더
