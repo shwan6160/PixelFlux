@@ -65,14 +65,13 @@ const ViewManager = {
 };
 
 // 1. 수정된 initScene (이제 View를 생성하고 등록함)
-export function initScene(containerId) {
+export function initScene(containerId, backgroundColor = 0x87CEEB) {
     ViewManager.init(); // 관리자 초기화 (최초 1회만 실행됨)
 
     const container = document.getElementById(containerId);
     const scene = new THREE.Scene();
     
-    // 개별 뷰마다 다른 배경색이 필요하다면 여기서 설정하거나 투명하게 유지
-    // scene.background = new THREE.Color(0x87CEEB); 
+    scene.background = new THREE.Color(backgroundColor);
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(-2, 1.5, 2);
