@@ -1,7 +1,5 @@
-import * as THREE from 'three';
-
-import { initScene, createMinecraftBlockMesh } from './pixelflux.js';
-import { isApotheosisNamespace, addEBM } from './addon/apotheosis.js';
+import { initScene, createMinecraftBlockMesh } from '../pixelflux.js';
+import { isApotheosisNamespace, addEBM } from '../addon/apotheosis.js';
 
 // --- 애플리케이션 상태 관리 ---
 const engine = initScene('canvas-container');
@@ -49,7 +47,5 @@ async function renderModel() {
         }
     }
 }
-
 document.getElementById('render-btn').addEventListener('click', renderModel);
-
 await renderModel();
