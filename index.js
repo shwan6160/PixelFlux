@@ -1,5 +1,7 @@
+import * as THREE from 'three';
+
 import { initScene, createMinecraftBlockMesh } from './pixelflux.js';
-import { isApotheosisNamespace, resolveApotheosisTextureUrl } from './addon/apotheosis.js';
+import { isApotheosisNamespace, addEBM } from './addon/apotheosis.js';
 
 // --- 애플리케이션 상태 관리 ---
 const engine = initScene('canvas-container');
@@ -36,11 +38,18 @@ async function renderModelUI(jsonUrl) {
     }
 }
 
-// 6. 이벤트 리스너 및 초기화
-document.getElementById('render-btn').addEventListener('click', () => {
+async function renderModel() {
     const jsonUrl = document.getElementById('json-url').value;
-    renderModelUI(jsonUrl);
-});
+    await renderModelUI(jsonUrl);
+    if (isApotheosisNamespace(jsonUrl)) {
+        console.log("Apotheosis 모델 감지: EBM 추가 시도");
+        const ebmBlock = await addEBM(jsonUrl);
+        if (ebmBlock) {
+            engine.scene.add(ebmBlock);
+        }
+    }
+}
 
-// 초기 로드 시 렌더링
-renderModelUI(document.getElementById('json-url').value);
+document.getElementById('render-btn').addEventListener('click', renderModel);
+
+await renderModel();
