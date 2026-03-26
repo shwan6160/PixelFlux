@@ -26,6 +26,14 @@ const ViewManager = {
         this.renderer.setScissorTest(true); // Scissor Test 활성화
 
         this.animate();
+
+        // 스크롤 시 밀림 현상 막기 위한 이벤트 리스너
+        window.addEventListener('scroll', () => {
+            this.render(); 
+        }, { passive: true });
+        window.addEventListener('resize', () => {
+            this.render();
+        }, { passive: true });
     },
 
     animate() {
