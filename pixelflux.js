@@ -49,9 +49,7 @@ const ViewManager = {
             this.renderer.setSize(width, height, false);
         }
 
-        this.renderer.setScissorTest(false);
-        this.renderer.clear();
-        this.renderer.setScissorTest(true);
+
 
         this.views.forEach(view => {
             const rect = view.container.getBoundingClientRect();

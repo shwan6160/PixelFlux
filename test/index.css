@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    background-color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+}
+
+div.views {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+div.views div {
+    width: 300px;
+    height: 200px;
+    display: block;
+
+    border: 2px solid #444;
+    margin: 300px;
+}
