@@ -18,7 +18,7 @@ export default defineConfig({
       external: ['three'],
       output: {
         paths: {
-          three: 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'
+          three: 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js'
         }
       }
     },
