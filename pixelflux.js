@@ -11,26 +11,16 @@ const ViewManager = {
 
     init() {
         if (this.renderer) return;
+        
+        // DOM에 추가하지 않고 백그라운드에서 렌더링용으로만 사용할 공용 WebGL 캔버스 생성
         this.canvas = document.createElement('canvas');
-        this.canvas.style.position = 'fixed';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.width = '100vw';
-        this.canvas.style.height = '100vh';
-        this.canvas.style.pointerEvents = 'none'; // 클릭 이벤트가 아래 div로 전달되게 함
-        this.canvas.style.zIndex = '-1'; 
-        document.body.appendChild(this.canvas);
-
+        
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setScissorTest(true); // Scissor Test 활성화
+        this.renderer.setScissorTest(true); 
 
         this.animate();
 
-        // 스크롤 시 밀림 현상 막기 위한 이벤트 리스너
-        window.addEventListener('scroll', () => {
-            this.render(); 
-        }, { passive: true });
         window.addEventListener('resize', () => {
             this.render();
         }, { passive: true });
@@ -42,14 +32,16 @@ const ViewManager = {
     },
 
     render() {
-        // 캔버스 크기 조정
+        // 공용 WebGL 캔버스 크기를 화면 크기로 충분히 확보 (최대 컨테이너 크기 대비)
         const width = window.innerWidth;
         const height = window.innerHeight;
-        if (this.canvas.width !== width || this.canvas.height !== height) {
+        const pixelRatio = window.devicePixelRatio;
+        
+        if (this.canvas.width !== Math.floor(width * pixelRatio) || this.canvas.height !== Math.floor(height * pixelRatio)) {
             this.renderer.setSize(width, height, false);
         }
 
-
+        const canvasPhysHeight = this.canvas.height;
 
         this.views.forEach(view => {
             const rect = view.container.getBoundingClientRect();
@@ -57,17 +49,35 @@ const ViewManager = {
             // 화면 밖에 있으면 렌더링 스킵 (성능 최적화)
             if (rect.bottom < 0 || rect.top > height || rect.right < 0 || rect.left > width) return;
 
-            // 좌표 계산 (Three.js는 왼쪽 아래가 0,0 / DOM은 왼쪽 위가 0,0)
-            const bottom = height - rect.bottom;
-            const left = rect.left;
+            // 각 뷰의 컨테이너 크기와 캔버스 크기 일치화
+            const viewWidth = Math.max(1, Math.floor(rect.width * pixelRatio));
+            const viewHeight = Math.max(1, Math.floor(rect.height * pixelRatio));
 
-            // 1. 해당 구역만 가두기
-            this.renderer.setViewport(left, bottom, rect.width, rect.height);
-            this.renderer.setScissor(left, bottom, rect.width, rect.height);
+            if (view.canvas2d.width !== viewWidth || view.canvas2d.height !== viewHeight) {
+                view.canvas2d.width = viewWidth;
+                view.canvas2d.height = viewHeight;
+            }
 
-            // 2. 렌더링
+            // WebGL 캔버스의 좌측 하단(0,0)에만 현재 뷰를 렌더링
+            this.renderer.setViewport(0, 0, rect.width, rect.height);
+            this.renderer.setScissor(0, 0, rect.width, rect.height);
+            
             view.controls.update();
             this.renderer.render(view.scene, view.camera);
+
+            // 렌더링된 결과를 DOM의 2D 캔버스로 복사 (스크롤 시 밀림 및 잔상 완벽 해결)
+            view.ctx.clearRect(0, 0, viewWidth, viewHeight);
+            view.ctx.drawImage(
+                this.renderer.domElement,
+                0,
+                canvasPhysHeight - viewHeight, // WebGL 좌표계는 좌측 하단 기준이므로 Y축 보정
+                viewWidth,
+                viewHeight,
+                0,
+                0,
+                viewWidth,
+                viewHeight
+            );
         });
     }
 };
@@ -77,14 +87,23 @@ export function initScene(containerId, backgroundColor = 0x87CEEB) {
     ViewManager.init(); // 관리자 초기화 (최초 1회만 실행됨)
 
     const container = document.getElementById(containerId);
-    const scene = new THREE.Scene();
     
+    // 컨테이너 자체에 2D 캔버스를 추가하여 브라우저 네이티브 스크롤을 타게함
+    const canvas2d = document.createElement('canvas');
+    canvas2d.style.width = '100%';
+    canvas2d.style.height = '100%';
+    canvas2d.style.display = 'block';
+    container.appendChild(canvas2d);
+    
+    const ctx = canvas2d.getContext('2d', { alpha: false }); // 성능 향상을 위해 alpha 조정 가능
+
+    const scene = new THREE.Scene();
     scene.background = new THREE.Color(backgroundColor);
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(-2, 1.5, 2);
 
-    const controls = new OrbitControls(camera, container); // renderer.domElement 대신 container 사용
+    const controls = new OrbitControls(camera, canvas2d); // 이벤트는 2D 캔버스에서 받음
     controls.enableDamping = true;
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -93,7 +112,7 @@ export function initScene(containerId, backgroundColor = 0x87CEEB) {
     directionalLight.position.set(5, 10, 5);
     scene.add(directionalLight);
 
-    const view = { container, scene, camera, controls };
+    const view = { container, canvas2d, ctx, scene, camera, controls };
     ViewManager.views.push(view);
 
     return view;
